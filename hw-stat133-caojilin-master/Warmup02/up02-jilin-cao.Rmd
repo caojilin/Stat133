@@ -1,0 +1,54 @@
+---
+title: "Up02-jilin-cao.Rmd"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## A bit of Data
+```{r}
+load("nba2017-salary-points.RData")
+
+salary_in_million <- round(salary/10^6,2)
+
+position_detailed <- factor(position,labels=c('center','small_fwd','power_fwd','shoot_guard','point_guard'))
+
+summary(salary)
+#standard deviation
+sd(salary)
+```
+```{r}
+hist(salary)
+plot(density(salary))
+```
+#relative frequency
+
+```{r}
+t <- table(team)
+barplot(t)
+relfreq <- t/nrow(t)
+barplot(relfreq)
+```
+## 2)Scatterplot of Points and Salary
+```{r}
+plot(scored,salary_in_million,xlab="points",ylab="Salary(in millions)")
+title("Score and Salary")
+```
+
+## 3) Correlation between points and salary
+###number of individuals
+```{r}
+n = length(scored)
+x_mean = sum(scored)/n
+y_mean = sum(salary_in_million)/n
+var_x = (1/(n-1))*sum((scored-x_mean)^2)
+var_y = (1/(n-1))*sum((salary-y_mean)^2)
+sd_x = sqrt(var_x)
+sd_y = sqrt(var_y)
+cov_x_y = (1/(n-1))*sum((scored-x_mean)*(salary-y_mean))
+cor_x_y = (cov_x_y)/((sd_x)*(sd_y))
+```
+## Reflection
+>
+  I think plotting is hard for me, there are so many parameters. It's hard to memorize and understand what each argument like 'ylab' and 'pch' means.

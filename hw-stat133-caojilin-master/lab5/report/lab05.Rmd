@@ -1,0 +1,148 @@
+---
+title: "Lab 05"
+author: "caojilin"
+date: "2/22/2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.path='../images/')
+```
+```{r}
+library(dplyr)
+library(ggplot2)
+dat = read.csv('../data/nba2017-players.csv', stringsAsFactors = FALSE)
+# use slice() to subset the data by selecting the first 5 rows.
+five_rows = slice(dat,1:5)
+five_rows
+# use slice() to subset the data by selecting rows 10, 15, 20, ..., 50.
+slice(dat,seq(10,50,5))
+# use slice() to subset the data by selecting the last 5 rows.
+slice(dat,(length(dat$player)-4):length(dat$player))
+slice(dat,437:441)
+slice(dat,(nrow(dat)-4):nrow(dat))
+# use filter() to subset those players with height less than 70 inches tall.
+filter(dat,height<70)
+# use filter() to subset rows of Golden State Warriors ('GSW').
+filter(dat,team=='GSW')
+# use filter() to subset rows of GSW centers ('C').
+filter(dat,team=='GSW' & position =='C')
+# use filter() and then select(), to subset rows of lakers ('LAL'), and then display their names.
+select(filter(dat,team=='LAL'),player)
+# use filter() and then select(), to display the name and salary, of GSW point guards
+select(filter(dat,team=='GSW' & position=='PG'),player,salary)
+# find how to select the name, age, and team, of players with more than 10 years of experience, making 10 million dollars or less.
+select(filter(dat,experience >10 & salary <10000000),player,age,team)
+# find how to select the name, team, height, and weight, of rookie players, 20 years old, displaying only the first five occurrences (i.e. rows)
+select(slice(filter(dat,age==20 & experience == 0),1:5),player,age,team,height,weight)
+```
+```{r}
+gsw <- filter(dat, team == 'GSW')
+gsw <- select(gsw, player, height, weight)
+gsw <- slice(gsw, c(4, 8, 10, 14, 15))
+gsw
+# using the data frame gsw, add a new variable product with the product of height and weight.
+mutate(gsw,product=height*weight)
+# create a new data frame gsw3, by adding columns log_height and log_weight with the log transformations of height and weight.
+gsw3 = mutate(gsw,log_height_and_weight=log(height,base=10)+log(weight,base=10))
+# use the original data frame to filter() and arrange() those players with height less than 71 inches tall, in increasing order.
+arrange(filter(dat,height <71),height)
+# display the name, team, and salary, of the top-5 highest paid players
+slice(select(arrange(dat,desc(salary)),player,team,salary),1:5) 
+# display the name, team, and salary, for the top-5 highest paid players
+slice(select(arrange(dat,desc(salary)),player,team,salary),1:5) 
+# display the name, team, and points3, of the top 10 three-point players
+slice(select(arrange(dat,desc(points3)),player,team,points3),1:10) 
+
+# create a data frame gsw_mpg of GSW players, that contains variables for player name, experience, and min_per_game (minutes per game), sorted by min_per_game (in descending order)
+gsw_mpg = filter(dat,team=='GSW')
+gsw_mpg = mutate(gsw_mpg,min_per_game=minutes/games)
+gsw_mpg = select(arrange(gsw_mpg,desc(min_per_game)),player,experience,min_per_game)
+gsw_mpg
+```
+```{r}
+# use summarise() to get the largest height value.
+summarise(dat,max(height)) 
+# use summarise() to get the standard deviation of points3.
+summarise(dat,sd(points3))
+# use summarise() and group_by() to display the median of three-points, by team.
+summarise(group_by(dat,team),median_points3=median(points3))
+# display the average triple points by team, in ascending order, of the bottom-5 teams (worst 3pointer teams)
+slice(arrange(summarise(group_by(dat,team),ave3=mean(points3)),ave3),1:5)
+# obtain the mean and standard deviation of age, for Power Forwards, with 5 and 10 years (including) years of experience.
+summarise(filter(dat,position=='PF',experience >=5 & experience <=10),mean_age=mean(age),sd_age=sd(age))
+```
+```{r}
+# Open the ggplot2 cheatsheet
+# Use the data frame gsw to make a scatterplot of height and weight.
+ggplot(data= gsw,aes(x=height,y=weight)) + geom_point(aes(color=player))
+# Find out how to make another scatterplot of height and weight, using geom_text() to display the names of the players.
+ggplot(data= gsw,aes(x=height,y=weight)) + geom_point(aes(color=player))+geom_text(aes(label=player))
+# Get a scatter plot of height and weight, for ALL the warriors, displaying their names with geom_label().
+gsw1 = filter(dat,team=='GSW')
+ggplot(data=select(gsw1,player,height,weight),aes(x=height,y=weight))+geom_label(aes(label=player),check_overlap=TRUE)
+
+# Get a density plot of salary (for all NBA players).
+ggplot(data= select(dat,salary),aes(salary)) + geom_density()
+# Get a histogram of points2 with binwidth of 50 (for all NBA players).
+ggplot(data= select(dat,points2),aes(points2)) + geom_histogram(binwidth=50)
+# Get a barchart of the position frequencies (for all NBA players).
+ggplot(data= select(dat,position),aes(position))+geom_bar(fill=rainbow(n=5))
+# Make a scatterplot of experience and salary of all Centers, and use geom_smooth() to add a regression line.
+ggplot(data = filter(dat,position=='C'),aes(x=experience,y=salary)) +geom_point(aes(color=experience)) + geom_smooth()
+# Repeat the same scatterplot of experience and salary of all Centers, but now use geom_smooth() to add a loess line (i.e. smooth line).
+ggplot(data = filter(dat,position=='C'),aes(x=experience,y=salary)) +geom_point(aes(color=experience)) + geom_smooth(method='loess')
+```
+```{r}
+# Make scatterplots of experience and salary faceting by position
+ggplot(data=dat,aes(x=experience,y=salary))+geom_point(aes(color=factor(position)))+facet_wrap(~ position)
+# Make scatterplots of experience and salary faceting by team
+ggplot(data=dat,aes(x=experience,y=salary))+geom_point(aes(color=factor(position)))+facet_wrap(~ team)
+# Make density plots of age faceting by team
+ggplot(data=dat)+geom_density(aes(dat$age))+facet_wrap(~ team)
+
+# Make scatterplots of height and weight faceting by position
+ggplot(data=dat,aes(x=height,y=weight))+geom_point(aes(color=factor(position)))+facet_wrap(~ position)
+# Make scatterplots of height and weight, with a 2-dimensional density, geom_density2d(), faceting by position
+ggplot(data=dat,aes(x=height,y=weight))+geom_point(aes(color=factor(position)))+facet_wrap(~ position)+geom_density2d()
+# Make a scatterplot of experience and salary for the Warriors, but this time add a layer with theme_bw() to get a simpler background
+ggplot(data=dat[dat$team=='GSW',],aes(x=experience,y=salary))+geom_point(aes(color=factor(position)))+theme_bw()
+# Repeat any of the previous plots but now adding a leyer with another theme e.g. theme_minimal(), theme_dark(), theme_classic()
+ggplot(data=dat,aes(x=height,y=weight))+geom_point(aes(color=factor(position)))+facet_wrap(~ position)+theme_minimal()
+ggplot(data=dat,aes(x=height,y=weight))+geom_point(aes(color=factor(position)))+facet_wrap(~ position)+theme_dark()
+ggplot(data=dat,aes(x=height,y=weight))+geom_point(aes(color=factor(position)))+facet_wrap(~ position)+theme_classic()
+```
+Open the terminal.
+Move inside the images/ directory of the lab.
+List the contents of this directory  
+ls  
+Now list the contents of the directory in long format.  
+ls -l  
+How would you list the contents in long format, by time?  
+ls -lt  
+How would you list the contents displaying the results in reverse (alphabetical)? order  
+ls -r  
+Without changing your current directory, create a directory copies at the parent level (i.e. lab05/).  
+mkdir ../copies  
+Copy one of the PNG files to the copies folder.  
+
+cp unnamed-chunk-5-9.png ../copies  
+
+Use the wildcard * to copy all the .png files in the directory copies.  
+cp **.png ../copies/  
+
+Change to the directory copies.  
+cd ../copies/  
+Use the command mv to rename some of your PNG files.  
+mv unnamed-chunk-4-1.png 4-1.png  
+
+Change to the report/ directory.  
+cd ../report/  
+From within report/, find out how to rename the directory copies as copy-files.  
+mv ../copies/ copy-files  
+From within report/, delete one or two PNG files in copy-files.  
+rm copy-files/4-1.png  
+From within report/, find out how to delete the directory copy-files.  
+rm -r copy-files  

@@ -1,0 +1,1 @@
+This project's goal is to analyze what are the factors that affect NBA players shooting. Data sets are the Golden State's Warriors players. Packages used are ggplot2 and dplyr. There are many interesting things we can dig from these data set.

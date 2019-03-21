@@ -1,0 +1,282 @@
+---
+title: "hw01-jilin-cao"
+author: "caojilin"
+date: "2/18/2018"
+output: github_document
+---
+###Data Import
+```{r}
+column_names = c("symboling"  
+,"normalized_losses"
+,"make"
+,"fuel_type"       
+, "aspiration"      
+, "num_of_doors"   
+, "body_style"      
+, "drive_wheels"    
+, "engine_location" 
+, "wheel_base"
+, "length"          
+, "width"           
+, "height"          
+, "curb_weight"     
+, "engine_type"    
+, "num_of_cylinders"
+, "engine_size"
+, "fuel_system"
+, "bore"
+, "stroke"         
+, "compression_ratio"
+, "horsepower"     
+, "peak_rpm"      
+, "city_mpg"        
+, "highway_mpg"     
+, "price")
+column_types = c('real'
+,'real'
+,'character'
+,'character'
+,'character'
+,'character'
+,'character'
+,'character'
+,'character'
+,'real'
+,'real'
+,'real'
+,'real'
+,'integer'
+,'character'
+,'character'
+,'integer'
+,'character'
+,'real'
+,'real'
+,'real'
+,'integer'
+,'integer'
+,'integer'
+,'integer'
+,'integer')
+library(readr)
+
+column_types1=c(symboling = col_double(),
+  normalized_losses = col_double(),
+  make = col_character(),
+  fuel_type = col_character(),
+  aspiration = col_character(),
+  num_of_doors = col_character(),
+  body_style = col_character(),
+  drive_wheels = col_character(),
+  engine_location = col_character(),
+  wheel_base = col_double(),
+  length = col_double(),
+  width = col_double(),
+  height = col_double(),
+  curb_weight = col_integer(),
+  engine_type = col_character(),
+  num_of_cylinders = col_character(),
+  engine_size = col_integer(),
+  fuel_system = col_character(),
+  bore = col_double(),
+  stroke = col_double(),
+  compression_ratio = col_double(),
+  horsepower = col_integer(),
+  peak_rpm = col_integer(),
+  city_mpg = col_integer(),
+  highway_mpg = col_integer(),
+  price = col_character())
+
+dat = read.csv('imports-85.data',header=FALSE,stringsAsFactors=FALSE,col.names = column_names,colClasses = column_types,na.strings = '?')
+str(dat,vec.len=1)
+
+dat1 = read_csv('imports-85.data',col_names = column_names,col_types = column_types1,na = c('?'))
+str(dat1,vec.len=1)
+```
+###3) Technical Questions about importing data (10 pts)
+Answer the following questions (using your own words). You do NOT need to include any
+commands.  
+
+a.If you don’t provide a vector of column names, what happens to the column names of
+the imported data when you simply invoke read.csv('imports-85.data')?  
+
+&nbsp; &nbsp;It's going to use the first row as the column names. If a columns consits of numbers, 'X' will appear
+ahead the numbers. Like 'X1, X2'
+  
+b.If you don’t provide a vector of column names, what happens to the column names of the
+imported data when you invoke read.csv('imports-85.data', header = FALSE)?  
+
+&nbsp; &nbsp;It will use V1,V2,V3...as column names.
+
+c.When using the reading table functions, if you don’t specify how missing values are
+codified, what happens to the data type of those columns that contain '?', e.g. price
+or num_of_doors?  
+
+&nbsp; &nbsp;If I specified the data type for each column, like assign price as 'real',then it would be an error if I call read table when it encounters "?". If I don't assign data type for columns, it will keep '?', it will be harder to manipulate data later.  
+
+d.Say you import imports-85.data in two different ways. In the first option you import
+the data without specifying the data type of each column. In the second option you do
+specify the data types. You may wonder whether both options return a data frame of
+the same memory size. You can actually use the function object.size() that provides
+an estimate of the memory that is being used to store an R object. Why is the data
+frame imported in the second option bigger (in terms of bytes) than the data frame
+imported in the first option?  
+
+&nbsp; &nbsp;Without specifying data type for columns, reading tables will convert all characters as factors ,and factors store as integers, and integers takes less spaces
+
+e.Say the object dat is the data frame produced when importing imports-85.data.What happens to the data values if you convert dat as an R matrix?  
+
+&nbsp; &nbsp;R matrix require elements have same data type. So I tested and got a matrix with all elements converted to strings.   
+
+###4) Plotting 
+
+```{r}
+colors = c("red", "yellow", "green", "violet", "orange", "blue", "pink", "cyan") 
+hist(dat$price,col=colors,main='frequency of price',xlab='price')
+# This histogram shows that the frequency of car price mostly concentrates on 5000 to 20000. Which makes sence because most cars are purchased by normal people. They are affordable, so not very expensive.
+```
+```{r}
+boxplot(dat$horsepower,horizontal=TRUE)
+# From this graph we can see the horsepower mainly are centered at 100. There are some exceptions, which probably are sportscar with high horsepower.
+
+barplot(sort(table(dat$body_style),decreasing=TRUE),main='frequency of body-style')
+# We can see that sedan is the most frequent body style, and the convertible is the least. Which accord with the reality. This graph gives us a clear view of the frequency of body-style in decreasing order.
+
+stars(dat[dat$aspiration == 'turbo',c('wheel_base','length','width','height','price')])
+# How do we interpret this?
+```
+
+5)Summaries (10 pts)
+Use R code to answer the following questions:  
+
+a.What is the mean price of fuel_type gas cars? And what is the mean price of
+fuel_type diesel cars? (removing missing values)
+```{r}
+mean(dat[dat$fuel_type=='gas','price'],na.rm = TRUE)
+mean(dat[dat$fuel_type=='diesel','price'],na.rm = TRUE)
+```
+
+b.What is the make of the car with twelve num_of_cylinders?
+```{r}
+dat[dat$num_of_cylinders=='twelve','make']
+```
+
+c.What is the make that has the most diesel cars?
+```{r}
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+getmode(dat[dat$fuel_type=='diesel','make'])
+```
+
+d.What is the price of the car with the largest amount of horsepower?
+```{r}
+df = dat[dat$horsepower==max(dat$horsepower,na.rm = TRUE),'price']
+df
+```
+
+e.What is the bottom 10th percentile of city_mpg?
+```{r}
+quantile(sort(dat$city_mpg,decreasing = FALSE), .10)
+
+```
+
+f.What is the top 10th percentile of highway_mpg?
+
+```{r}
+quantile(dat$highway_mpg, c(.90))
+
+```
+g.What is the median price of those cars in the bottom 10th percentile of city_mpg?
+```{r}
+median(dat[dat$city_mpg <= 17,'price'],na.rm=TRUE)
+```
+
+6)Technical Questions about data frames (10 pts)  
+Answer the following questions (using your own words). You do NOT need to include any
+commands.  
+
+a.What happens when you use the dollar $ operator on a data frame, attempting to use
+the name of a column that does not exist? For example: dat$xyz where there is no
+column named xyz.  
+&nbsp; &nbsp; It returns NULL  
+
+b.Which of the following commands fails to return the vector mpg which is a column in
+the built-in data frame mtcars:
+1. mtcars$mpg
+2. mtcars[ ,1]
+3. mtcars[[1]]
+4. mtcars[ ,mpg]
+5. mtcars[["mpg"]]
+6. mtcars$"mpg"
+7. mtcars[ ,"mpg"]  
+
+&nbsp; &nbsp; number 4 doesn't work  
+
+c.Based on your answer for part (b), what is the reason that makes such command to
+fail?  
+&nbsp; &nbsp; To refer a column, the name needs a "". For example, mtcars[,'mpg'], or just use the number
+of column, like mtcars[,1]
+
+d.Can you include an R list as a “column” of a data frame? YES or NO, and why.  
+&nbsp; &nbsp;Yes, data frame is actually a list. We use cbind function to create a data frame, which could combine two list into a data frame.  
+
+e.What happens when you apply as.list() to a data frame? e.g. as.list(mtcars)  
+&nbsp; &nbsp; # It converts a data frame into a list of individual data frame objects for each column. When I called 'class' function on mtcars and as.list(mtcars), the former one gives me 'data.frame',the later one gives me 'list'.  
+
+f.Consider the command: abc <- as.list(mtcars). What function(s) can you use to
+convert the object abc into a data frame?  
+
+&nbsp; &nbsp; Use the function "data.frame()"  
+
+7 and 8) Correlations of quantitative variables and Principal Components Analysis
+```{r,fig.width=8,fig.height=8}
+qdat = na.omit(dat)
+qdat = qdat[,c( "wheel_base"
+, "length"          				
+, "width"           				
+, "height"          				
+, "curb_weight"     								
+, "engine_size"							
+, "bore"				
+, "stroke"         				
+, "compression_ratio"				
+, "horsepower"     				
+, "peak_rpm"      				
+, "city_mpg"        				
+, "highway_mpg"     				
+, "price")]
+library(corrplot)
+corrplot(cor(qdat),method="circle")
+# This is a circle pattern graph. The correlation's range is from -1 to 1 indicated by the color red and blue. For example, 'length' and 'weight' have a strong relationship, but 'length' and 'city_mpg' doesn't not have.
+corrplot(cor(qdat),method="pie")
+# This is a pie pattern graph. It's similar to the previous one, instead of a 'circle', it uses a 'pie' indicating correlation. This graph is more specific and clear than 'circle', since from each 'pie' we could see how much two variables are ralated.
+
+pca_prcomp = prcomp(qdat,scale. = TRUE)
+
+eigenvalues = pca_prcomp$sdev^2
+
+loadings = pca_prcomp$rotation
+round(loadings,3)
+
+scores = pca_prcomp$x
+round(head(scores),3)
+
+#Examine the eigenvalues and determine the proportion of variation that is “captured”
+#by the first three components.
+eigenvalues
+proportion = sum(head(eigenvalues,3))/sum(eigenvalues)
+proportion
+
+
+#components
+plot(scores[,1],scores[,2],xlab="PC1",ylab = 'PC2')
+ 
+#rotation
+#use the first two loadings (i.e. eigenvectors) 
+plot(loadings[,1],loadings[,2],xlab = 'PC1',ylab = 'PC2')
+
+
+biplot(pca_prcomp)
+```

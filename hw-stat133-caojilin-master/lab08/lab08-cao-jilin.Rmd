@@ -1,0 +1,264 @@
+---
+title: "Lab08-cao-jilin"
+author: "caojilin"
+date: "3/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+vec <- c(3, 1, 4) # Change this value!
+
+for (j in c(3,1,4)) { # Replace c() with an appropriate sequence.
+  # Fill in.
+  print(3*j)
+}
+
+vec <- c(3, 1, 4)  # Change this value!
+vec2 <- rep(0, length(vec))  # "empty" of zeros vector to be filled in the loop
+
+for (i in c(1,2,3)) {# Replace c() with an appropriate sequence.
+  vec2[i]= vec[i]
+}  
+
+#Summation Series
+summation = 0
+k = 10
+for(i in seq(0,k)){
+  summation = summation + (1/2)^i
+}
+summation
+#It converges, because as n goes larger, summation is the same
+
+#
+summation = 0
+k = 1
+for(i in seq(0,k)){
+  summation = summation + (1/9)^i
+}
+summation
+#It converges, because as n goes larger, summation is the same
+
+
+#Arithmetic Series
+an = 0
+d = 3
+n = 3
+summation = 0
+for(i in seq(0,n-1)){
+  an = an + d
+  summation = summation + an
+}
+summation
+# Not converge
+
+#Geometric Sequence n>0
+a1 = 3
+summation = 0
+r = 2
+n = 1
+for(i in seq(0,n-1)){
+  an = a1 * (r^i)
+  summation = summation + an
+}
+an
+# Not converge
+
+#Sine Approximation
+sine = 0
+x = 1 # x is variable
+k = 5 # num of terms
+for(i in seq(1,2*k,by=2)){
+  sine = sine + ((-1)^floor(i/2))*((x^i)/factorial(i))
+}
+sine
+sin(x)
+
+#For loop with a matrix
+set.seed(123)
+X <- matrix(rnorm(12), nrow = 4, ncol = 3)
+X
+Y = matrix(NA,nrow=4,ncol=3)
+for(i in 1:nrow(X)){
+  for(j in 1:ncol(X)){
+    if(X[i,j] <0){
+      Y[i,j] = (X[i,j])^2
+    } else if(X[i,j]>0){
+      Y[i,j] = sqrt(X[i,j])
+    }
+  }
+}
+Y
+
+# your reduce() function
+reduce <- function(val_while) {
+  # Fill in.
+  while (val_while %% 2 == 0) { # Continue the loop as long as val_while is even.
+
+    val_while <- val_while / 2
+    print(val_while)
+      }
+  
+}
+
+reduce(898128000)
+
+#Average
+#for loop
+x=1:100
+for_loop = function(x){
+  summation = 0
+  for(i in x){
+    summation = summation + i
+  }
+  return(summation/length(x))
+}
+for_loop(x)
+#while loop
+x = 1:100
+while_loop = function(x){
+  summation = 0
+  i = 1
+  while(i <= length(x)){
+    summation = summation + x[i]
+    i = i + 1
+  }
+  summation/length(x)
+}
+while_loop(x)
+
+#repeat
+x = 1:100
+i = 1
+summation = 0
+repeat {
+  
+  if(i > length(x)){
+    summation = summation/length(x)
+    break
+  }
+  summation = summation + x[i]
+  i = i + 1
+}
+summation
+#Standard Deviation
+x = 1:100
+standard_devia = function(x){
+  mean_value = mean(x)
+  summation = 0
+  for(i in x){
+    summation = summation + (i-mean_value)^2
+  }
+  c = 1/(length(x)-1)
+  return(sqrt(c*summation))
+}
+standard_devia(x)
+sd(x)
+# same
+
+#Geometric Mean
+x = 1:100
+geo_mean_for = function(x){
+  summation = 1
+  for(i in x){
+    summation = summation*x[i]
+  }
+  c = length(x)
+  return(summation^(1/c))
+}
+geo_mean_for(x)
+
+geo_mean_while = function(x){
+  summation = 1
+  i = 1
+  while(i <= length(x)){
+    summation = summation*x[i]
+    i = i + 1
+  }
+  c = length(x)
+  return(summation^(1/c))
+}
+geo_mean_while(x)
+#using repeat
+x = 1:100
+i = 1
+summation=1
+repeat{
+  if(i > length(x)){
+    c=length(x)
+    summation = summation^(1/c)
+    break
+  }
+  summation = summation*x[i]
+  i = i + 1
+}
+summation
+
+# random distance matrix
+num_letters <- length(LETTERS)
+set.seed(123)
+values <- sample.int(num_letters) 
+distances <- values %*% t(values)
+diag(distances) <- 0
+dimnames(distances) <- list(LETTERS, LETTERS)
+
+#Distance Matrix of Letters
+get_dist = function(distances,letters){
+  total_values = 0
+  for(i in 1:(length(letters)-1)){
+    total_values = total_values + distances[letters[i],letters[i+1]]
+  }
+  return(total_values)
+}
+vec <- c('E', 'D', 'A')
+#test
+get_dist(distances,vec)
+
+cal <- c('C', 'A', 'L')
+get_dist(distances,cal)
+
+stats <- c('S', 'T', 'A', 'T', 'S')
+get_dist(distances,stats)
+
+oski <- c('O', 'S', 'K', 'I')
+get_dist(distances,oski)
+
+zzz <- rep('Z', 3)
+get_dist(distances,zzz)
+
+lets <- LETTERS
+get_dist(distances,lets)
+
+first = c('J','I','L','I','N')
+get_dist(distances,first)
+
+last = c('C','A','O')
+get_dist(distances,last)
+
+# use your own 'first' and 'last' objects
+strings <- list(
+  cal = cal,
+  stats = stats,
+  oski = oski,
+  zzz = zzz,
+  lets = lets,
+  first = first,
+  last = last
+)
+# strings_dists
+strings_dists = list( cal = NA,
+                      stats = NA,
+                      oski = NA,
+                      zzz = NA,
+                      lets = NA,
+                      first = NA,
+                      last = NA)
+for(i in 1:7){
+  strings_dists[[i]] = get_dist(distances, strings[[i]])
+}
+strings_dists
+
+```

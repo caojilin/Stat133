@@ -1,0 +1,216 @@
+---
+title: "lab10-cao-jilin"
+author: "caojilin"
+date: "4/08/2018"
+output: html_document
+---
+
+```{r}
+# you may need to install the packages
+# install.packages("stringr")
+# install.packages("plotly")
+library(dplyr)
+library(stringr)
+library(plotly)
+
+dat <- read.csv('mobile-food-sf.csv', stringsAsFactors = FALSE)
+day_freqs <- table(dat$DayOfWeekStr)
+
+barplot(day_freqs, border = NA, las = 3)
+plot_ly(x = names(day_freqs), 
+        y = day_freqs,
+        type = 'bar')
+# day frequencies table
+day_counts <- dat %>% 
+  select(DayOfWeekStr) %>%
+  group_by(DayOfWeekStr) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+day_counts
+plot_ly(day_counts, 
+        x = ~DayOfWeekStr, 
+        y = ~count,
+        type = 'bar')
+plot_ly(day_counts, 
+        x = ~reorder(DayOfWeekStr, count), 
+        y = ~count,
+        type = 'bar')
+
+```
+Your turn: What about times where the hour has just one digit? For example: 9AM, or 8AM? Create the following vector times and try to subset the hour and the periods with str_sub()
+```{r}
+times <- c('12PM', '10AM', '9AM', '8AM', '2PM')
+# subset time
+str_sub(times,end=-3)
+# subset period
+str_sub(times,start = -2)
+#
+str_replace(times, pattern = 'AM|PM', replacement = '')
+
+
+#Using times, create a numeric vector hours containing just the number time (i.e. hour)
+hours = str_sub(dat$starttime,end=-3)
+#Using times, create a character vector periods containing the period, e.g. AM or PM
+periods = str_sub(dat$starttime,start = -2)
+#Use plot_ly() to make a barchart of the counts for AM and PM values.
+
+time_counts = data.frame(table(periods))
+colnames(time_counts)[2] = "counts"
+plot_ly(time_counts,
+        x= ~periods,
+        y= ~counts,
+        type = "bar")
+
+# Write R code to create a vector start24 that contains the hour in 24hr scale.
+tep = data.frame("hours" = as.integer(hours),periods,stringsAsFactors = FALSE)
+tep["start24"] = tep$hours
+# Yeah, you need to repeat it in R. Like a = a + 2
+
+tep$start24[periods == "PM"] = tep$start24[periods == "PM"]+12
+tep["start24"] = paste0(as.character(tep$start24),":","00")
+start24 = tep$start24
+rm(tep)
+
+#Add two columns start and end to the data frame dat, containing the starting and ending hour respectively (columns must be "numeric").
+dat["start"] = as.numeric(hours)
+dat["period"] = periods
+dat$start[dat$period == "PM"] = dat$start[dat$period == "PM"] + 12
+dat$start[dat$starttime=="12PM"] = 12
+dat$start[dat$starttime=="12AM"] = 0
+# remove period column
+dat$period = NULL
+# Do same thing with end
+
+end_hours = str_sub(dat$endtime,end = -3)
+end_period = str_sub(dat$endtime,start = -2)
+dat["end"] = as.numeric(end_hours)
+dat["period"] = end_period
+dat$end[dat$period == "PM"] = dat$end[dat$period == "PM"] + 12
+dat$end[dat$endtime=="12PM"] = 12
+dat$end[dat$endtime=="12AM"] = 0
+dat$period = NULL
+
+#With the starting and ending hours, calculate the duration, and add one more column duration to the data frame dat:
+dat$end[dat$end < dat$start] = dat$end[dat$end < dat$start] + 24
+dat["duration"] = dat$end - dat$start
+dat$end[dat$end >= 25] = dat$end[dat$end >= 25] - 24
+
+```
+Latitude and Longitude Coordinates
+```{r}
+loc1 <- "(37.7651967350509,-122.416451692902)"
+# "remove" opening parenthesis 
+str_replace(loc1, pattern = '\\(', replacement = '')
+## [1] "37.7651967350509,-122.416451692902)"
+# "remove" closing parenthesis
+str_replace(loc1, pattern = '\\)', replacement = '')
+## [1] "(37.7651967350509,-122.416451692902"
+str_replace(loc1, pattern = '\\(|\\)', replacement = '')
+str_replace_all(loc1, pattern = '\\(|\\)', replacement = '')
+
+lat_lon <- str_replace_all(loc1, pattern = '\\(|\\)', replacement = '')
+
+str_replace(lat_lon, pattern = ',', replacement = '')
+
+# string split in stringr
+str_split(lat_lon, pattern = ',')
+
+
+
+# You have to put them together
+lat_lon = str_split(str_replace_all(dat$Location,pattern = '\\(|\\)', replacement = ''),pattern = ",")
+lat <- lapply(lat_lon, function(x) x[1])
+lon = lapply(lat_lon, function(x) x[2])
+lat = as.numeric(unlist(lat))
+lon = as.numeric(unlist(lon))
+
+dat["lat"] = lat
+dat["lon"] = lon
+```
+Plotting locations on a map
+```{r}
+plot(dat$lon, dat$lat, pch = 19, col = "#77777744")
+
+# default scatterplot
+plot_ly(x = lon, y = lat)
+# default scatterplot
+plot_ly(x = lon, y = lat, type = 'scatter', mode = 'markers')
+
+plot_ly(data = dat, x = ~lon, y = ~lat, type = 'scatter', mode = 'markers')
+library(RgoogleMaps)
+
+# coordinates for center of the map
+center <- c(mean(dat$lat, na.rm = TRUE), mean(dat$lon, na.rm = TRUE))
+
+# zoom value
+zoom <- min(MaxZoom(range(dat$lat, na.rm = TRUE), 
+                    range(dat$lon, na.rm = TRUE)))
+
+# san francisco map
+map1 <- GetMap(center=center, zoom=zoom, destfile = "san-francisco.png")
+
+PlotOnStaticMap(map1, dat$lat, dat$lon, col = "#ed4964", pch=20)
+
+library(ggmap)
+
+dat <- na.omit(dat)
+# ggmap typically asks you for a zoom level, 
+# but we can try using ggmap's make_bbox function:
+sbbox <- make_bbox(lon = dat$lon, lat = dat$lat, f = .1)
+sbbox
+
+# get a 'terrain' map
+sf_map <- get_map(location = sbbox, maptype = "terrain", source = "google")
+ggmap(sf_map) + 
+  geom_point(data = dat, 
+             mapping = aes(x = lon, y = lat), 
+             color = "red", alpha = 0.2, size = 1)
+```
+
+```{r}
+dat$optionaltext[1:3]
+foods <- dat$optionaltext[1:10]
+
+str_detect(foods,pattern = "Burritos|burritos")
+grepl("Burritos|burritos",foods,ignore.case = TRUE)
+
+#Match both
+str_detect(foods,pattern = "tacos|quesadillas")
+
+grepl("tacos|quesadillas",foods,ignore.case = TRUE)
+
+#subsetting
+burritos = dat[str_detect(dat$optionaltext,pattern = "Burritos|burritos"),]
+
+burritos2 = filter(dat,str_detect(dat$optionaltext,pattern = "Burritos|burritos"))
+
+burritos3 = dat %>%
+              filter(str_detect(optionaltext,pattern = "Burritos|burritos"))
+
+#burritos map
+# ggmap typically asks you for a zoom level, 
+# but we can try using ggmap's make_bbox function:
+sbbox <- make_bbox(lon = burritos$lon, lat = burritos$lat, f = .1)
+sbbox
+
+# get a 'terrain' map
+sf_map <- get_map(location = sbbox, maptype = "terrain", source = "google")
+ggmap(sf_map) + 
+  geom_point(data = burritos, 
+             mapping = aes(x = lon, y = lat), 
+             color = "red", alpha = 0.2, size = 1,na.rm = TRUE)
+
+burritos["type"] = "burittos"
+quesadillas = dat[str_detect(dat$optionaltext,pattern="quesadillas|Quesadillas"),]
+quesadillas["type"]="quesadillas"
+tacos = dat[grepl("quesadillas",dat$optionaltext,ignore.case = TRUE),]
+tacos["type"] = "tacos"
+
+dat_food = rbind(burritos,quesadillas,tacos)
+
+loc = make_bbox(lon=dat_food$lon,lat=dat_food$lat,f=0.1)
+food_map = get_map(location = loc,maptype="terrain",source = "google")
+
+ggmap(food_map) + geom_point(data=dat_food,aes(x=lon,y=lat),color="red",alpha=0.2,size=1,na.rm=TRUE) + facet_wrap(~ type)
+```

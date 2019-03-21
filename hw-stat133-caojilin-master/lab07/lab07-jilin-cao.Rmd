@@ -1,0 +1,246 @@
+---
+title: "Lab07"
+author: "caojilin"
+date: "3/8/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,error = TRUE)
+```
+
+```{r}
+#' @title square
+#' @description calculates the square number
+#' @param x a number
+#' @return computed square
+f = function(x){
+  return(x^2)
+}
+#' @title linear
+#' @description calculates the linear function
+#' @param x a number
+#' @return computed linear function
+g = function(x){
+  return(2*x+5)
+}
+fog = function(x){
+  return(f(g(x)))
+}
+gof = function(x){
+  return(g(f(x)))
+}
+#' @title pythagoras formula
+#' @description calculates the  compute the length of the hypotenuse
+#' @param a,b  c of a right triangle with legs of length a and b.
+#' @return computed linear function
+pythagoras = function(a,b){
+  return(sqrt(a^2+b^2))
+}
+
+#' @title circle_area
+#' @description calculates the area of circle
+#' @param radius=1 pi*r^2
+#' @return computed area
+circle_area = function(radius = 1){
+  if(radius<0){
+    stop("radius cannot be negative")
+  }
+  return(pi*radius^2)
+}
+
+#' @title cylinder_area
+#' @description calculates the area of cylinder_area
+#' @param radius=1,height=1
+#' @return computed area
+cylinder_area = function(radius=1,height=1){
+  if(radius<0 | height<0){
+    stop("input cannot be negative")
+  }
+  return(2 * pi * radius * height + 2 * circle_area(radius))
+}
+
+
+#' @title cylinder_volume
+#' @description calculates the cylinder_volume
+#' @param radius=1,height=1
+#' @return computed cylinder_volume
+cylinder_volume = function(radius=1,height=1){
+  if(radius<0 | height<0){
+    stop("input cannot be negative")
+  }
+  return(height * circle_area(radius))
+
+}
+cylinder_volume(radius = 3, height = 10)
+
+#' @title miles2kms
+#' @description calculates the miles2kms
+#' @param x, miles
+#' @return computed miles2kms
+miles2kms = function(x){
+  return(x*1.6)
+}
+
+miles=c(seq(1,10),seq(20,100,10))
+data.frame(miles=miles,kms=miles2kms(miles))
+
+#' @title gallon2liters
+#' @description calculates the gallon2liters
+#' @param x, gallon2liters
+#' @return computed gallon2liters
+gallon2liters = function(x){
+  return(x*3.78541)
+}
+liters2gallons = function(x){
+  return(gallon2liters(x/3.78541)/3.78541)
+}
+
+lst = c(seq(1,10),seq(20,100,10))
+data.frame(liters=lst,liters2gallons(lst))
+
+#' @title seconds2years
+#' @description calculates the seconds2years
+#' @param x, seconds2years
+#' @return computed seconds2years
+seconds2years = function(x) {
+  return(x/3.154e+7)
+}
+seconds2years(1000000000)
+
+#' @title gaussian
+#' @description calculates the gaussian
+#' @param x,m,s x, mean, standard deviation,
+#' @return computed gaussian
+gaussian = function(x,m,s){
+  if (s<0){
+    stop("s must be greater than 0")
+  }
+  return((s*sqrt(2*pi))**-1*exp((-0.5)*((x-m)/s)**2))
+}
+gaussian(1,0,2)
+dnorm(x = 1, mean = 0, sd = 2)
+
+x_values <- seq(from = -4.5, to = 4.5, by = 0.1)
+y_values = gaussian(seq(-4.5, 4.5, by = 0.1),0,2)
+plot(x_values,y_values,las=1,type='l',lwd=2)
+#las labels are parallel (=0) or perpendicular(=2) to axis
+#lwd controls the width of the lines
+# type ='l', line
+
+poly1 = function(x){
+  x**3
+}
+poly2 = function(x){
+  (x**2-1)*(x+3)**3
+}
+poly3 = function(x){
+  (x**2-1)*(x**-9)
+}
+x <- seq(-4, 4, length.out = 20)
+y <- poly1(x)
+
+# graph polynomial
+plot(x, y, type = 'l', lwd = 3, col = "#FB7215", las = 1)
+abline(h = 0, v = 0, col = '#888888aa', lwd = 1.5)
+title(main = expression(paste(f(x), ' = ', x**3)))
+
+x <- seq(-4, 4, length.out = 20)
+y <- poly2(x)
+
+# graph polynomial
+plot(x, y, type = 'l', lwd = 3, col = "#FB7215", las = 1)
+abline(h = 0, v = 0, col = '#888888aa', lwd = 1.5)
+title(main = expression(paste(f(x), ' = ', x^2, (x - 1))))
+
+x <- seq(-4, 4, length.out = 20)
+y <- poly3(x)
+
+# graph polynomial
+plot(x, y, type = 'l', lwd = 3, col = "#FB7215", las = 1)
+abline(h = 0, v = 0, col = '#888888aa', lwd = 1.5)
+title(main = expression(paste(f(x), ' = ', x^2, (x - 1))))
+
+
+descriptive = function(x){
+  #you could use na.rm = TRUE to remove NA values.
+  #IQR = upper quantile(75%) - lower quantile(25%)
+  # = Q3-Q2
+   c('min'=min(x),'q1'=quantile(x,0.25),'median'=median(x),'mean'=mean(x),
+    'q3'=quantile(x,0.75),'max'=max(x),'range'=max(x)-min(x),'IQR'=IQR(x),'sd'=sd(x))
+}
+
+z <- 100*pi
+# Fill in the following if-else statements. You may (or may not) 
+# have to add or subtract else if or else statements.
+if (z>100) { # Replace TRUE with a condition.
+  z=100
+} else if (z<0) { # Replace TRUE with a condition.
+  z=0
+} else {
+  z
+}
+
+is_even = function(x){
+  if(is.numeric(x) == FALSE){
+    NA
+  }else if(x %% 2 == 0)
+  {TRUE}
+  else{
+    FALSE 
+  }
+  }
+
+is_odd = function(x){
+  return (!is_even(x))
+}
+
+grade = function(x){
+  if(x >100 || x <0){
+    stop("invalid input")
+  }
+  
+  if(x>=90 & x<=100){
+    grade1 = 'A'
+  } else if(x>=80 & x<90){
+    grade1 = 'B'
+  } else if(x>=70 & x<80){
+    grade1 = 'C'
+  }else if(x >=60 & x<70){
+    grade1 = 'D'
+  }else{
+    grade1 = 'F'
+  }
+  return(grade1)
+}
+
+miles2inches(2)
+miles2feet(2)
+miles2yards(2)
+miles2meters(2)
+miles2kms(2)
+
+miles2inches = function(x=1){
+  return(x*63360)
+}
+miles2feet = function(x=1){
+  return(x*5280)
+}
+miles2yards = function(x=1){
+  return(x*1760)
+}
+miles2meters = function(x=1){
+  return(x*1609.34)
+}
+miles2kms = function(x=1){
+  return(x*1.6)
+}
+
+convert = function(x,to){
+  switch(to,'in'=miles2inches(x),'ft'=miles2feet(x),'yd'=miles2yards(x),'km'=miles2kms(x),
+         'm'=miles2meters(x))
+}
+
+convert(2,'ft')
+
+```

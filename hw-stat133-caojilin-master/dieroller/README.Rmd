@@ -1,0 +1,76 @@
+---
+output:
+  github_document:
+    html_preview: false
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+
+## Overview
+
+`"dieroller"` is a minimal [R](http://www.r-project.org/) package 
+that provides functions to simulate rolling a die.
+
+* `die()` creates a die object (of class `"die"`)
+* `roll()` rolls a die object, producing a `"roll"` object.
+* `plot()` method for a `"roll"` object to plot frequencies of heads.
+* `summary()` method for a `"roll"` object.
+
+
+## Motivation
+
+This package has been developed to illustrate some of the concepts
+behind the creation of an R package.
+
+
+## Installation
+
+Install the development version from GitHub via the package `"devtools"`:
+
+```r
+# development version from GitHub:
+#install.packages("devtools") 
+
+# install "cointoss" (without vignettes)
+devtools::install_github("gastonstat/cointoss")
+
+# install "cointoss" (with vignettes)
+devtools::install_github("gastonstat/cointoss", build_vignettes = TRUE)
+```
+
+
+## Usage
+
+```{r}
+library(dieroller)
+
+# default die
+die1 <- die()
+die1
+
+# 1 roll of die1
+roll(die1)
+
+# 10 rolls of die1
+roll10 <- roll(die1, times = 10)
+roll10
+
+# summary
+summary(roll10)
+
+
+# 100 rolls
+roll100 <- roll(die1, times = 100)
+
+# summary
+summary(roll100)
+```

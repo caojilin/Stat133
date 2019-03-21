@@ -1,0 +1,62 @@
+Box 1 contains two blue balls, and one red ball. Box 2 contains two blue balls, three red balls, and one white ball.
+```{r}
+library(ggplot2)
+box1 = c(rep("blue",2),"red")
+box2 = c(rep("blue",2),rep("red",3),"white")
+
+repetition = 1000
+drawn_balls = matrix("",nrow = repetition,ncol = 4)
+
+set.seed(345)
+for(i in 1:repetition){
+  #select a box
+  num = runif(1)
+  if(num > 0.5){
+    drawn_balls[i,] = sample(box1,4,replace = TRUE)
+  }else{
+    drawn_balls[i,] = sample(box2,4)
+  }
+}
+head(drawn_balls)
+
+count_freq = function(vec){
+    freq=c()
+    for(i in 1:repetition){
+      num = 0
+      for (j in drawn_balls[i,]) {
+        if(j == "blue"){
+          num = num + 1
+        }
+      }
+      freq = c(freq,num)
+    }
+    return(freq)
+  }
+freq = count_freq(drawn_balls)
+table(freq)
+x = 1:repetition
+prob_0 = data.frame(freqs = cumsum(freq == 0)/1:repetition,number=0,reps=x)
+prob_1 = data.frame(freqs = cumsum(freq == 1)/1:repetition,number=1,reps=x)
+prob_2 = data.frame(freqs = cumsum(freq == 2)/1:repetition,number=2,reps=x)
+prob_3 = data.frame(freqs = cumsum(freq == 3)/1:repetition,number=3,reps=x)
+prob_4 = data.frame(freqs = cumsum(freq == 4)/1:repetition,number=4,reps=x)
+
+dat = rbind(prob_0,prob_1,prob_2,prob_3,prob_4)
+dat$number = factor(dat$number)
+# # traditional way, draw multiple line
+# plot(prob_0$freqs, type = 'l', lwd = 2, col = 'tomato', las = 1,
+#      ylim = c(0, 1))
+# abline(h = 0.5, col = 'gray50')
+# lines(prob_1$freqs,lwd = 2, col = 'blue', las = 1,
+#      ylim = c(0, 1))
+# lines(prob_2$freqs,lwd = 2, col = 'green', las = 1,
+#      ylim = c(0, 1))
+# lines(prob_3$freqs,lwd = 2, col = 'purple', las = 1,
+#      ylim = c(0, 1))
+# lines(prob_4$freqs,lwd = 2, col = 'brown', las = 1,
+#      ylim = c(0, 1))
+
+# use factor to use color 
+ggplot(data = dat,aes(reps,freqs)) + geom_path(aes(group=number,color=number)) 
+```
+
